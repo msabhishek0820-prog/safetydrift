@@ -1,4 +1,4 @@
-# DriftGuard 🛡️
+# SafetyDrift 🛡️
 
 **The first open-source implementation of the SafetyDrift framework.**
 
