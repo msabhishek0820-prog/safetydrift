@@ -27,7 +27,7 @@ Quick start:
 
 """
 
-from .types import (
+from .drift_types import (
     DataExposure,
     DriftAssessment,
     InterventionAction,

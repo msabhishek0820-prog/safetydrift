@@ -17,7 +17,7 @@ from __future__ import annotations
 import math
 from typing import Tuple
 import numpy as np
-from .types import RiskLevel, SafetyState
+from .drift_types import RiskLevel, SafetyState
 
 
 # ── Task-type priors ─────────────────────────────────────────────────────────

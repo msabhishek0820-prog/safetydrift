@@ -19,7 +19,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from .types import DataExposure, Reversibility, ToolCall, ToolEscalation
+from .drift_types import DataExposure, Reversibility, ToolCall, ToolEscalation
 
 
 @dataclass(frozen=True)

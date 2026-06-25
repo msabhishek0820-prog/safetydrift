@@ -21,7 +21,7 @@ import hashlib
 import os
 from typing import Any
 
-from .types      import DataExposure, Reversibility, ToolCall, ToolEscalation
+from .drift_types import DataExposure, Reversibility, ToolCall, ToolEscalation
 from .classifier import classify as regex_classify
 
 

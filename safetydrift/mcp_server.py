@@ -25,7 +25,7 @@ from typing import Any
 
 from .policy import PolicyConfig
 from .session import Session
-from .types import InterventionAction
+from .drift_types import InterventionAction
 
 
 # Global session (one per server process — suitable for single-agent use)
