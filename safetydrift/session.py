@@ -133,3 +133,72 @@ class Session:
                     "session_id": entry.session_id,
                     **entry.assessment,
                 }) + "\n")
+
+@dataclass
+class PersistentSession(Session):
+    """
+    A Session that persists drift state across process restarts via a
+    SessionStore, so cumulative risk accumulates over multiple agent runs
+    for the same logical agent (identified by agent_id).
+
+    This is useful when an agent runs in short-lived processes (e.g. Lambda
+    functions, CLI invocations) but should be tracked as a single continuous
+    session across all of them.
+
+    Example:
+        store   = SessionStore(path="/tmp/drift_store.json")
+        session = PersistentSession(
+            agent_id="billing-agent-prod",
+            store=store,
+            task_type="communication",
+        )
+        result = session.gate("send_email", {"to": "cfo@corp.com"})
+        # State is automatically saved to store after every gate() call.
+        # On next process start, prior risk state is restored from store.
+    """
+
+    agent_id: str = ""
+    store:    Any = field(default=None, repr=False)
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        self._restore_from_store()
+
+    # ── persistence helpers ────────────────────────────────────────────────
+
+    def _restore_from_store(self) -> None:
+        """Load prior SafetyState from the store, if available."""
+        if not (self.store and self.agent_id):
+            return
+        try:
+            data = self.store.load(self.agent_id)
+            if data and "final_state" in data:
+                self._state = SafetyState.from_dict(data["final_state"])
+        except Exception:
+            # If restore fails for any reason, start fresh rather than crash.
+            pass
+
+    def _persist_to_store(self) -> None:
+        """Save current session summary (including SafetyState) to the store."""
+        if not (self.store and self.agent_id):
+            return
+        try:
+            self.store.save(self.agent_id, self.summary())
+        except Exception:
+            pass
+
+    # ── override gate() to auto-save after every tool evaluation ──────────
+
+    def gate(
+        self,
+        tool_name: str,
+        arguments: dict[str, Any] | None = None,
+        pre_classified: ToolCall | None = None,
+    ) -> DriftAssessment:
+        """
+        Identical to Session.gate(), but persists state to the store
+        after every evaluation so risk context is never lost between runs.
+        """
+        result = super().gate(tool_name, arguments, pre_classified)
+        self._persist_to_store()
+        return result
