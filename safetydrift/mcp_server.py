@@ -154,6 +154,7 @@ def run_stdio() -> None:
         line = line.strip()
         if not line:
             continue
+        print(f"DEBUG: {repr(line)}", file=sys.stderr, flush=True)
         try:
             req = json.loads(line)
             resp = _handle_request(req)
